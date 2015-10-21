@@ -1,0 +1,52 @@
+# some code excerpts to be used for tab completion
+
+# sort associative array keys & then use them to output ( sorted, thus ) corresponding values
+declare -A myStuff
+myStuff[lol]=pop
+( .. )
+echo "${!myStuff[@]}" | { read line; echo -e "${line//\ /\\n}"; } | sort | { while read line; do echo -e "${myStuff[$line]}"; done; }
+
+# get stuff ( separated by spaces )
+theAliases=$(compgen -A alias); theFcns=$(compgen -A function); theBuiltins=$(compgen -A builtin);
+
+# trying ..
+#for item in $(echo -e "${theAliases//\ /\\n}"); do echo "ITEM_ $item _ITEM"; done
+# get stuff in theassociative array - no working .. yet ? :/
+echo -e "${theAliases//\ /\\n}"; | { while read line; do execsAssArr[$line]="\e[01;32m${line}\e[m"; done; }
+# WORKS:
+for item in $(echo -e "${theAliases//\ /\\n}"); do assArr["${item}"]="\e[01;32m${item}\e[m"; done
+for item in $(echo -e "${theFcns//\ /\\n}"); do assArr["${item}"]="\e[01;34m${item}\e[m"; done
+for item in $(echo -e "${theBuiltins//\ /\\n}"); do assArr["${item}"]="\e[01;36m${item}\e[m"; done
+
+# then, we have a big associative array of all that stuff, whose values are type-colored versions of its keys
+# printing the keys
+echo -e "${!assArr[@]}"; 
+# printing the values
+echo -e "${assArr[@]}"
+
+# THE MAGICAL COMMAND ( in other words, the one that prints type-colored, alphabetically-sorted fcns/aliases/builtins )
+echo "${!assArr[@]}" | { read line; echo -e "${line//\ /\\n}"; } | sort | { while read line; do echo -e "${assArr[$line]}"; done; }
+
+
+# -- hence, to loop over all the aliases/fcns/builtins whose names start with a particular prefix:
+declare -A assArr2
+prefix="stag_"
+for type in alias function builtin; do
+  echo $type;
+  echo "type color: ${COLORMAP[${type}]}"
+  items=$(compgen -A "${type}" "${prefix}");
+  #for item in $(echo -e "${items//\ /\\n}"); do assArr2["${item}"]="\e[01;32m${item}\e[m"; done
+  # R: later ( when included with the rest of the code ), the above 'll b more like:
+  for item in $(echo -e "${items//\ /\\n}"); do assArr2["${item}"]="\e[${COLORMAP[${type}]}m${item}\e[m"; done
+done
+# we get it allll:
+echo "${!assArr2[@]}" | { read line; echo -e "${line//\ /\\n}"; } | sort | { while read line; do echo -e "${assArr2[$line]}"; done; }
+# want iconized tab-completion proposals ? try the below version that's piped to stag_ils ;p
+echo "${!assArr2[@]}" | { read line; echo -e "${line//\ /\\n}"; } | sort | { while read line; do echo -e "${assArr2[$line]}"; done; } | stag_ils
+
+# aka
+proposals=$(echo "${!assArr2[@]}" | { read line; echo -e "${line//\ /\\n}"; } | sort | { while read line; do echo -e "${assArr2[$line]}"; done; })
+# to get the number of chars ( not that useful here .. )
+echo "${#proposals}"
+# to get the number of items - kinda useful when hitting tab once & if there's only one item/proposal so as to autocomplete
+echo "${#assArr2[@]}"
