@@ -1,0 +1,15 @@
+# -- Hacky Prompt Color Map --
+# the current file maps types to their colors/styling
+# the said-style 'll be used to highlight the recognized types
+builtin:38;5;208
+alias:38;5;208
+function:38;5;208
+file:
+fifo:40;33
+shellscript:01;32
+executable:01;32
+text:38;5;249
+image:38;5;161
+video:38;5;97
+audio:00;36
+archive:01;31
